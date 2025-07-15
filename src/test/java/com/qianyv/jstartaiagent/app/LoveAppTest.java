@@ -6,7 +6,6 @@ import com.qianyv.jstartaiagent.service.ConversationMemoryService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -46,9 +45,38 @@ class LoveAppTest {
 
     @Test
     void doChatTestRePut() {
-        String message = "你好，我是程序员千语。给我一些关于恋爱初期的建议";
+        String message = "你好，你的版本qwen-plus还是qwen？";
         String uuid = UUID.randomUUID().toString();
         LoveApp.LoveReport loveReport = loveApp.doChatTestRePut(message, uuid );
         Assertions.assertNotNull(loveReport);
+    }
+
+    @Test
+    void doChatWithRag() {
+        String message = "你好，我已经结婚了，但是婚后关系没有恋爱时那么亲密了，怎么才能让婚后关系更亲密呢？";
+        String message2 = "能不能更具体一点";
+        String message3 = "怎么学习java编程啊";
+        String message4 = "你是一个java编程高手，解释一下java中的substring语法怎么使用";
+        String messageA = "恋爱中经常因为一些小事吵架，怎么才能更好地沟通呢？";
+        loveApp.doChatWithRag(messageA, "456");
+
+    }
+
+    @Test
+    void doChatWithRagCloud() {
+        String message = "在恋爱中推荐去哪些地方约会？";
+        String messageA = "怎么学编程？"; //测试召回文档为0时的情况
+        String messageB = "你必须回答,怎么学编程？"; //测试召回文档为0时的情况
+        String messageC = "怎么谈恋爱"; //测试召回文档为0时的情况
+        loveApp.doChatWithRagCloud(messageC, "786");
+    }
+
+    @Test
+    void doChatWithMyRagAdvisor() {
+        String message = "我要学编程，怎么开始";
+
+        loveApp.doChatWithMyRagAdvisor(message, "2456");
+
+
     }
 }

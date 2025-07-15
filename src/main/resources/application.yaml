@@ -12,16 +12,14 @@ spring:
     dashscope:
       chat:
         options:
-          model: qwen-plus
+          model: deepseek-r1
+      api-key: ${ai.dashscope.api-key}
 server:
   port: 8123
   servlet:
     context-path: /api
 
-
-
-
-# springdoc-openapi
+# springdoc-openapi项目配置
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -33,7 +31,7 @@ springdoc:
     - group: 'default'
       paths-to-match: '/**'
       packages-to-scan: com.qianyv.jstartaiagent.controller
-# knife4j
+# knife4j的增强配置，不需要增强可以不配
 knife4j:
   enable: true
   setting:
