@@ -10,9 +10,6 @@ spring:
     active: local
   ai:
     dashscope:
-      chat:
-        options:
-          model: deepseek-r1
       api-key: ${ai.dashscope.api-key}
 server:
   port: 8123
@@ -37,5 +34,6 @@ knife4j:
   setting:
     language: zh_cn
 
-
+search-api:
+  api-key: ${my-search-api-key} # 替换为实际的搜索API密钥，申请地址：https://www.searchapi.io/
 
