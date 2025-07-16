@@ -75,7 +75,7 @@ class LoveAppTest {
     void doChatWithMyRagAdvisor() {
         String message = "我要学编程，怎么开始";
 
-        loveApp.doChatWithMyRagAdvisor(message, "2456");
+        loveApp.doChatWithMyRagAdvisor(message, "5216");
 
 
     }
@@ -87,7 +87,7 @@ class LoveAppTest {
         // 测试网页抓取：恋爱案例分析
 //        testMessage("最近和对象吵架了，看看编程导航网站（codefather.cn）的其他情侣是怎么解决矛盾的？");
         // 测试资源下载：图片下载
-        testMessage("直接下载一张适合做手机壁纸的星空情侣图片为文件");
+        testMessage("直接下载一张适合做手机壁纸的星空情侣图片为文件，调用工具下载下来");
         // 测试终端操作：执行代码
 //        testMessage("执行 Python3 脚本来生成数据分析报告");
         // 测试文件操作：保存用户档案
