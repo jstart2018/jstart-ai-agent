@@ -1,9 +1,12 @@
 package com.qianyv.jstartaiagent.controller;
 
 
+import com.qianyv.jstartaiagent.agent.JieManus;
 import com.qianyv.jstartaiagent.app.LoveApp;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,12 +16,18 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 @RestController
-@RequestMapping("/ai/love_app")
+@RequestMapping("/ai")
 @Slf4j
 public class AiController {
 
     @Resource
     private LoveApp loveApp;
+
+    @Resource
+    private ToolCallback[] allTools;
+
+    @Resource
+    private ChatModel dashscopeChatModel;
 
 
     @GetMapping(value = "/doChat/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -55,6 +64,20 @@ public class AiController {
                         }, sseEmitter::completeWithError,sseEmitter::complete);
         return sseEmitter;
     }
+
+
+    /**
+     * 流式调用 Manus 超级智能体
+     *
+     * @param message
+     * @return
+     */
+    @GetMapping("/agent/chat")
+    public SseEmitter doChatWithAgent(String message) {
+        JieManus jieManus = new JieManus(allTools, dashscopeChatModel);
+        return jieManus.runStream(message);
+    }
+
 
 
 }
