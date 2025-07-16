@@ -1,3 +1,4 @@
+/*
 package com.qianyv.jstartaiagent.demo.invoke;
 
 import jakarta.annotation.Resource;
@@ -22,3 +23,4 @@ public class SpringAiAiInvoke implements CommandLineRunner {
         System.out.println(output.getText());
     }
 }
+*/

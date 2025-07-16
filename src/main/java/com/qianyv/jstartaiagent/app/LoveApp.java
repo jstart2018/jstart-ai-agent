@@ -1,5 +1,6 @@
 package com.qianyv.jstartaiagent.app;
 
+import com.alibaba.cloud.ai.dashscope.api.DashScopeApi;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.qianyv.jstartaiagent.advisors.MyLoggerAdvisor;
 import com.qianyv.jstartaiagent.advisors.ReReadingAdvisor;
