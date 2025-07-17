@@ -59,7 +59,7 @@ public class LoveAppRagCloudAdvisorConfig {
 
         VectorStoreDocumentRetriever vsdr = VectorStoreDocumentRetriever.builder()
                 .vectorStore(loveAppVectorStore) //使用本地向量存储
-                .similarityThreshold(0.23)
+                .similarityThreshold(0.24)
                 .filterExpression(filterExpression)//接收过滤表达式（对元信息过滤）
                 .topK(5)
                 .build();

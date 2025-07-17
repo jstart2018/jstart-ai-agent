@@ -53,7 +53,7 @@ public class AiController {
     @GetMapping("/doChat/sse3")
     public SseEmitter chatBySseEmitter(String message, String charId) {
         SseEmitter sseEmitter = new SseEmitter(180000L);//超时时间
-        loveApp.doChatByStream(message, charId)
+        loveApp.doChatWithMyRagAdvisorBySSE(message, charId)
                 .subscribe(chunk -> {   // 订阅数据流
                             try {
                                 sseEmitter.send(chunk);// 发送数据到客户端

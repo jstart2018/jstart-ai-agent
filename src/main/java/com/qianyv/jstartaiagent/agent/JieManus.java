@@ -24,7 +24,7 @@ public class JieManus extends ToolCallAgent {
                 If you want to stop the interaction at any point, use the `terminate` tool/function call.  
                 """;  
         this.setNextStepPrompt(NEXT_STEP_PROMPT);  
-        this.setMaxSteps(20);  
+        this.setMaxSteps(10);
         // 初始化客户端  
         ChatClient chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultAdvisors(new MyLoggerAdvisor())

@@ -167,6 +167,19 @@ public class LoveApp {
         return text;
     }
 
+    public Flux<String> doChatWithMyRagAdvisorBySSE(String message, String charId) {
+        Flux<String> content = chatClient.prompt()
+                .user(message)
+                .advisors(advisor -> advisor.param(CHAT_MEMORY_CONVERSATION_ID_KEY, charId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 20))
+                .advisors(myRagAdvisor)//基于RetrievalAugmentationAdvisor检索增强
+                .stream()
+                .content();
+
+        return content;
+    }
+
+
 
     /**
      * 使用AI工具

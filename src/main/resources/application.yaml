@@ -1,16 +1,16 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/jstart_ai_agent?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
-    username: root
-    password: 123456
+    url: jdbc:mysql://${db.url-port}/jstart_ai_agent?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
+    username: ${db.username}
+    password: ${db.password}
   application:
     name: jstart-ai-agent
   profiles:
-    active: local
+    active: local # 设置为 local 环境
   ai:
     dashscope:
-      api-key: ${ai.dashscope.api-key}
+      api-key: ${ai.dashscope.api-key} # 读取local环境中的api-key
       chat:
         options:
           model: qwen-plus-2025-01-25
