@@ -1,9 +1,12 @@
 <template>
-  <div class="chat-container">
+  <div class="chat-container agent-theme">
     <!-- 聊天头部 -->
     <div class="chat-header">
       <button class="back-btn" @click="goBack">← 返回</button>
-      <h2>🤖 AI超级智能体</h2>
+      <div class="header-content">
+        <div class="agent-icon">🤖</div>
+        <h2>AI超级智能体</h2>
+      </div>
       <div class="chat-id">会话ID: {{ chatId }}</div>
     </div>
 
@@ -26,7 +29,11 @@
           <img src="../assets/avatar-ai.svg" alt="AI" />
         </div>
         <div class="message-content">
-          <span class="loading">AI正在思考中...</span>
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
       </div>
     </div>
@@ -37,11 +44,12 @@
         v-model="inputMessage"
         @keyup.enter="sendMessage"
         :disabled="isLoading"
-        placeholder="请输入您的问题..."
+        placeholder="请输入您的问题，AI超级智能体为您解答..."
         class="input"
       />
-      <button @click="sendMessage" :disabled="isLoading || !inputMessage.trim()" class="btn btn-primary">
-        发送
+      <button @click="sendMessage" :disabled="isLoading || !inputMessage.trim()" class="btn btn-primary send-btn">
+        <span>发送</span>
+        <span class="send-icon">🚀</span>
       </button>
     </div>
   </div>
@@ -54,7 +62,7 @@ marked.setOptions({
   breaks: true,  // 允许换行
   gfm: true,     // 使用GitHub风格Markdown
   headerIds: false, // 禁用标题ID以避免潜在问题
-  mangle: false  // 禁用mangle以避免某些特殊字符问题
+  mangle: false  // 禁用mangle以避免某些���殊字符问题
 })
 
 export default {
@@ -165,10 +173,76 @@ export default {
     renderMarkdown(content) {
       if (!content) return ''
       try {
-        return marked.parse(content)
+        // 使用独特标记和ID为每个步骤添加唯一标识
+        let stepCount = 0;
+
+        // 处理步骤标记和链接
+        let processedContent = content
+          // 处理常见步骤格式，转换为特殊标记
+          .replace(/步骤\s*(\d+)[:：]/g, (match, num) => {
+            stepCount++;
+            return `<div class="step-title">步骤 ${num}:</div>`;
+          })
+          .replace(/Step\s*(\d+)[:：]?/gi, (match, num) => {
+            stepCount++;
+            return `<div class="step-title">步骤 ${num}:</div>`;
+          })
+          .replace(/第(\d+)步[:：]?/g, (match, num) => {
+            stepCount++;
+            return `<div class="step-title">步骤 ${num}:</div>`;
+          })
+          // 处理可能是步骤开头的编号形式（避免过度匹配普通列表）
+          .replace(/(\d+)\.\s+([A-Z][^\.]+)/g, (match, num, text) => {
+            // 只处理以大写字母开头且内容较长的情况
+            if (text.length > 10) {
+              stepCount++;
+              return `<div class="step-title">步骤 ${num}:</div>${text}`;
+            }
+            return match; // 否则保持原样
+          });
+
+        // 处理链接，确保不会干扰已处理的步骤标记
+        processedContent = processedContent
+          // 处理JSON格式的链接
+          .replace(/\"link\":\"(https?:\/\/[^\"]+)\"/g, (match, url) => {
+            return `"link":"<a href="${url}" target="_blank" class="external-link">${url}</a>"`;
+          })
+          // 处理普通URL
+          .replace(/(?<!\(|="|>)(https?:\/\/[^\s<"]+)(?!\))/g, (url) => {
+            return `<a href="${url}" target="_blank" class="external-link">${url}</a>`;
+          });
+
+        // 处理数字列表格式
+        processedContent = processedContent
+          .replace(/(?<!\<div class="step-title">步骤 )(\d+)\.(?!\:)/g, '<span class="list-number">$1.</span>');
+
+        // 配置marked选项，确保链接可点击
+        const renderer = new marked.Renderer();
+        renderer.link = (href, title, text) => {
+          return `<a href="${href}" target="_blank" title="${title || ''}" class="markdown-link">${text}</a>`;
+        };
+
+        marked.setOptions({
+          breaks: true,
+          gfm: true,
+          headerIds: false,
+          mangle: false,
+          renderer: renderer
+        });
+
+        // 将处理后的内容转换为HTML
+        let markedContent = marked.parse(processedContent);
+
+        // 给每个步骤内容添加缩进和样式
+        markedContent = markedContent.replace(
+          /(<div class="step-title">.*?<\/div>)([\s\S]*?)(?=<div class="step-title">|$)/g,
+          '$1<div class="step-content">$2</div>'
+        );
+
+        return markedContent;
       } catch (e) {
-        console.error('Markdown渲染错误:', e)
-        return content // 如果渲染出错，至少显示原始内容
+        console.error('Markdown渲染错误:', e);
+        return content; // 如果渲染出错，至少显示原始内容
       }
     },
   }
@@ -327,5 +401,176 @@ export default {
   border: 1px solid #e0e0e0;
   border-bottom-left-radius: 4px;
   margin-left: 8px;
+}
+
+/* 新增步骤样式 */
+ :deep(.step-title) {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin: 1.2em 0 0.6em;
+  color: #ffffff;
+  background-color: #28a745;
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+  display: inline-block;
+  position: relative;
+}
+
+:deep(.step-title)::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 20px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #28a745;
+}
+
+:deep(.step-content) {
+  margin-left: 1.5em;
+  margin-bottom: 1.2em;
+  padding: 0.8em 1em;
+  border-left: 3px solid #28a745;
+  background-color: rgba(40, 167, 69, 0.05);
+  border-radius: 0 8px 8px 0;
+}
+
+.list-number {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.markdown-link {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.external-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* 新增整体聊天界面样式 */
+.agent-theme {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+}
+
+.agent-icon {
+  font-size: 1.5em;
+  margin-right: 10px;
+}
+
+.chat-id {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #fff;
+}
+
+.chat-input {
+  display: flex;
+  padding: 10px 20px;
+  background-color: #f1f1f1;
+  border-top: 1px solid #ddd;
+}
+
+.input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 18px;
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.send-btn {
+  position: relative;
+}
+
+.send-icon {
+  margin-left: 8px;
+  font-size: 1.2em;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.send-btn:hover .send-icon {
+  transform: translateY(-2px);
+}
+
+/* 新增打字指示器样式 */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.typing-indicator span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  background-color: #28a745;
+  border-radius: 50%;
+  animation: typing 0.7s infinite alternate;
+}
+
+@keyframes typing {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-4px);
+  }
 }
 </style>

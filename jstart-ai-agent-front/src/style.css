@@ -40,10 +40,10 @@ body {
 
 /* 输入框样式 */
 .input {
-  padding: 12px;
+  padding: 14px;  /* 增加内边距 */
   border: 1px solid #ddd;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 20px;  /* 进一步增大输入框字体 */
   outline: none;
   transition: border-color 0.3s ease;
 }
@@ -85,8 +85,9 @@ body {
 }
 
 .message {
-  margin-bottom: 15px;
+  margin-bottom: 20px;  /* 增加消息间距 */
   display: flex;
+  align-items: flex-start;  /* 让头像与消息顶部对齐 */
 }
 
 .message.user {
@@ -99,34 +100,35 @@ body {
 
 .message-content {
   max-width: 70%;
-  padding: 12px 16px;
-  border-radius: 18px;
+  padding: 14px 18px;  /* 增加气泡内边距 */
+  border-radius: 20px;  /* 更圆润的气泡 */
   word-wrap: break-word;
+  font-size: 20px;  /* 进一步增大消息内容的字体大小 */
+  line-height: 1.6;  /* 增加行高以提高可读性 */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);  /* 添加轻微阴影增加立体感 */
 }
 
 .message.user .message-content {
   background: #007bff;
   color: white;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 6px;  /* 优化气泡尾部 */
+  margin-right: 8px;  /* 增加与头像的间距 */
 }
 
 .message.ai .message-content {
   background: white;
   color: #333;
   border: 1px solid #e0e0e0;
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 6px;  /* 优化气泡尾部 */
+  margin-left: 8px;  /* 增加与头像的间距 */
 }
 
 .chat-input {
-  padding: 20px;
+  padding: 22px;  /* 增加输入区域内边距 */
   background: white;
   border-top: 1px solid #e0e0e0;
   display: flex;
-  gap: 10px;
-}
-
-.chat-input input {
-  flex: 1;
+  gap: 12px;  /* 增加输入框与按钮间距 */
 }
 
 /* 加载动画 */
