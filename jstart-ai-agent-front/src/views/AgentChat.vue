@@ -86,7 +86,8 @@ export default {
       this.chatId = this.generateChatId()
 
       // 添加欢迎消息
-      this.addMessage('ai', '你好！我是AI超级智能体，我可以帮助您解答各种问题、协助您完成任务。请告诉我您需要什么帮助？')
+      this.addMessage('ai', '你好！我是AI超级智能体，我可以帮助您解答各种问题、协助您完成任务。请告诉我您需要什么帮助？\n' +
+          '(提示词示例：帮我整理一下广州适合团建的地方，并抓取部分图片)')
     },
 
     generateChatId() {

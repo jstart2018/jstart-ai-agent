@@ -46,6 +46,7 @@
         :disabled="isLoading"
         placeholder="和AI恋爱大师倾诉您的心事..."
         class="input"
+        ref="messageInput"
       />
       <button @click="sendMessage" :disabled="isLoading || !inputMessage.trim()" class="btn btn-primary send-btn">
         <span>发送</span>
@@ -120,6 +121,12 @@ export default {
         this.addMessage('ai', '抱歉，网络连接出现问题，请稍后重试。')
       } finally {
         this.isLoading = false
+        // 消息发送完成后，重新聚焦输入框
+        this.$nextTick(() => {
+          if (this.$refs.messageInput) {
+            this.$refs.messageInput.focus()
+          }
+        })
       }
     },
 

@@ -48,7 +48,7 @@
     </div>
 
     <footer class="footer">
-      <p>© 2023 AI情感助手平台 - 让AI助你解锁情感密码</p>
+      <p>© 2025 AI情感助手平台 - 让AI助你解锁情感密码</p>
     </footer>
   </div>
 </template>
