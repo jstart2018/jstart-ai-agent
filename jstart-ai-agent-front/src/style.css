@@ -40,10 +40,10 @@ body {
 
 /* 输入框样式 */
 .input {
-  padding: 14px;  /* 增加内边距 */
+  padding: 16px;  /* 增加内边距以适应更大的字体 */
   border: 1px solid #ddd;
   border-radius: 8px;
-  font-size: 20px;  /* 进一步增大输入框字体 */
+  font-size: 30px;  /* 放大到原来的1.5倍 (20px * 1.5) */
   outline: none;
   transition: border-color 0.3s ease;
 }
@@ -100,11 +100,11 @@ body {
 
 .message-content {
   max-width: 70%;
-  padding: 14px 18px;  /* 增加气泡内边距 */
-  border-radius: 20px;  /* 更圆润的气泡 */
+  padding: 18px 24px;  /* 增加气泡内边距以适应更大的字体 */
+  border-radius: 22px;  /* 略微增加圆润度 */
   word-wrap: break-word;
-  font-size: 20px;  /* 进一步增大消息内容的字体大小 */
-  line-height: 1.6;  /* 增加行高以提高可读性 */
+  font-size: 30px;  /* 放大到原来的1.5倍 (20px * 1.5) */
+  line-height: 1.5;  /* 保持合适的行高 */
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);  /* 添加轻微阴影增加立体感 */
 }
 
@@ -112,7 +112,7 @@ body {
   background: #007bff;
   color: white;
   border-bottom-right-radius: 6px;  /* 优化气泡尾部 */
-  margin-right: 8px;  /* 增加与头像的间距 */
+  margin-right: 8px;  /* 增加与头��的间距 */
 }
 
 .message.ai .message-content {

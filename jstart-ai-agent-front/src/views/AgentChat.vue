@@ -57,6 +57,7 @@
 
 <script>
 import { marked } from 'marked'
+import { config } from '../config/index.ts'
 // 配置marked选项，确保所有Markdown格式都能正确解析
 marked.setOptions({
   breaks: true,  // 允许换行
@@ -123,7 +124,8 @@ export default {
     },
 
     async sendToAI(message) {
-      const apiUrl = `http://localhost:8123/api/ai/agent/chat?message=${encodeURIComponent(message)}`
+      // 使用环境配置中的API地址
+      const apiUrl = `${config.aiAgentChatEndpoint}?message=${encodeURIComponent(message)}`
       const eventSource = new EventSource(apiUrl)
       let aiResponse = ''
       let aiMessageId = null
@@ -178,7 +180,7 @@ export default {
 
         // 处理步骤标记和链接
         let processedContent = content
-          // 处理常见步骤格式，转换为特殊标记
+          // 处���常见步骤格式，转换为特殊标记
           .replace(/步骤\s*(\d+)[:：]/g, (match, num) => {
             stepCount++;
             return `<div class="step-title">步骤 ${num}:</div>`;

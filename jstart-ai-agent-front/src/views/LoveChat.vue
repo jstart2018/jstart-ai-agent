@@ -57,6 +57,7 @@
 
 <script>
 import { marked } from 'marked'
+import { config } from '../config/index.ts'
 // 配置marked选项，确保所有Markdown格式都能正确解析
 marked.setOptions({
   breaks: true,  // 允许换行
@@ -123,7 +124,8 @@ export default {
     },
 
     async sendToAI(message) {
-      const apiUrl = `http://localhost:8123/api/ai/doChat/sse3?message=${encodeURIComponent(message)}&charId=${this.chatId}`
+      // 使用环境配置中的API地址，而不是硬编码的本地地址
+      const apiUrl = `${config.aiLoveChatEndpoint}?message=${encodeURIComponent(message)}&charId=${this.chatId}`
 
       const eventSource = new EventSource(apiUrl)
       let aiResponse = ''
