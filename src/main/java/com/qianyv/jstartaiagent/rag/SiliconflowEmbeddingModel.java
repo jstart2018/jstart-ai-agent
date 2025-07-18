@@ -5,13 +5,11 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.metadata.DefaultUsage;
-import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -24,7 +22,8 @@ public class SiliconflowEmbeddingModel extends AbstractEmbeddingModel {
 
     private static final String API_URL = "https://api.siliconflow.cn/v1/embeddings";
 
-    private final String apiToken = "sk-ungdjmzrwyneukkjihwvhcspqwoplfvebolaohytwykggmja"; // 替换为实际Token
+    @Value("${siliconflow.api-key}")
+    private String apiToken; // 替换为实际Token
 
     /**
      * call方法负责执行具体的嵌入逻辑，可以自定义了，这里call方法直接发送http请求到Siliconflow的API

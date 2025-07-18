@@ -40,4 +40,5 @@ knife4j:
 
 search-api:
   api-key: ${my-search-api-key} # 替换为实际的搜索API密钥，申请地址：https://www.searchapi.io/
-
+siliconflow:
+    api-key: ${siliconflow-api-key} # 硅基流动API-KEY
