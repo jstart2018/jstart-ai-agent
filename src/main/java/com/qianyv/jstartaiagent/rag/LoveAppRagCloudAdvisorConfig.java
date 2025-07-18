@@ -24,8 +24,13 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class LoveAppRagCloudAdvisorConfig {
 
+    // todo 暂用阿里的灵积EmbeddingModel，有额度的可以开
+/*    @Resource
+    private VectorStore loveAppVectorStore;*/
+
+
     @Resource
-    private VectorStore loveAppVectorStore;
+    private VectorStore siliconflowVectorStore;
 
     @Value("${spring.ai.dashscope.api-key}")
     private String api_key;
@@ -63,7 +68,7 @@ public class LoveAppRagCloudAdvisorConfig {
 
 			Follow these rules:
 
-			1. If the answer is not in the context, answer based on your own knowledge.
+			1. If the answer does not match the context, but questions related to family, friendship, or love should be answered based on one's own knowledge, otherwise refuse to answer.
 			2. Avoid statements like "Based on the context..." or "The provided information...".
 
 			Query: {query}
@@ -76,10 +81,10 @@ public class LoveAppRagCloudAdvisorConfig {
                 .eq("status","单身").build();
 
         VectorStoreDocumentRetriever vsdr = VectorStoreDocumentRetriever.builder()
-                .vectorStore(loveAppVectorStore) //使用本地向量存储
-                .similarityThreshold(0.20)
+                .vectorStore(siliconflowVectorStore) //使用本地向量存储
+                .similarityThreshold(0.45d) //用硅基流动的EmbeddingModel要设置大一点，否则很容易检索出不相干知识库
 //                .filterExpression(filterExpression)//接收过滤表达式（对元信息过滤）
-                .topK(5)
+                .topK(3)
                 .build();
 
         return RetrievalAugmentationAdvisor
