@@ -34,7 +34,7 @@ public class LoveAppDocumentLoader {
             Resource[] resources = resourcePatternResolver.getResources("classpath:documents/*.md");
             for (Resource resource : resources) {
                 String filename = resource.getFilename();// 获取文件名
-                String status = filename.substring(filename.length() - 6, filename.length() - 4);
+                String status = filename.split("[-.]")[1];
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
                         .withHorizontalRuleCreateDocument(true)
                         .withIncludeCodeBlock(false)

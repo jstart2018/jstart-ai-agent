@@ -130,14 +130,53 @@ export default {
       const eventSource = new EventSource(apiUrl)
       let aiResponse = ''
       let aiMessageId = null
+
       eventSource.onmessage = (event) => {
-        const chunk = event.data
+        let chunk = event.data
+
+        // 处理可能的对象数据
+        try {
+          // 如果chunk是JSON字符串，尝试解析
+          if (chunk.startsWith('{') || chunk.startsWith('[')) {
+            const parsedData = JSON.parse(chunk)
+            // 如果是对象，提取其中的文本内容
+            if (typeof parsedData === 'object' && parsedData !== null) {
+              if (parsedData.content || parsedData.text || parsedData.message) {
+                chunk = parsedData.content || parsedData.text || parsedData.message
+              } else if (parsedData.data) {
+                chunk = parsedData.data
+              } else {
+                // 如果对象没有明显的文本字段，跳过这个chunk
+                console.warn('跳过无效数据:', parsedData)
+                return
+              }
+            }
+          }
+        } catch (e) {
+          // 如果不是JSON，直接使用原始数据
+          // 但要确保chunk是字符串
+          if (typeof chunk !== 'string') {
+            console.warn('跳过非字符串数据:', chunk)
+            return
+          }
+        }
+
+        // 确保chunk是字符串类型
+        if (typeof chunk !== 'string') {
+          console.warn('跳过非字符串chunk:', chunk)
+          return
+        }
+
         aiResponse += chunk
+
         if (aiMessageId) {
           const messageIndex = this.messages.findIndex(msg => msg.id === aiMessageId)
           if (messageIndex !== -1) {
-            // 直接渲染完整markdown内容
+            // 直接更新消息内容并强制重新渲染
             this.messages[messageIndex].content = aiResponse
+            this.messages[messageIndex].timestamp = new Date()
+            // 强制触发重新渲染
+            this.$forceUpdate()
           }
         } else {
           aiMessageId = ++this.messageIdCounter
@@ -148,10 +187,12 @@ export default {
             timestamp: new Date()
           })
         }
+
         this.$nextTick(() => {
           this.scrollToBottom()
         })
       }
+
       eventSource.onerror = (error) => {
         console.error('SSE连接错误:', error)
         eventSource.close()
@@ -159,6 +200,7 @@ export default {
           this.addMessage('ai', '抱歉，连接出现问题，请稍后重试。')
         }
       }
+
       eventSource.addEventListener('close', () => {
         eventSource.close()
       })

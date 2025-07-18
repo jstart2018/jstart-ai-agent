@@ -4,8 +4,8 @@
     <div class="chat-header">
       <button class="back-btn" @click="goBack">← 返回</button>
       <div class="header-content">
-        <div class="love-icon">💖</div>
-        <h2>AI恋爱大师</h2>
+        <div class="love-icon">💫</div>
+        <h2>AI情感助手</h2>
       </div>
       <div class="chat-id">会话ID: {{ chatId }}</div>
     </div>
@@ -28,11 +28,14 @@
         <div class="avatar">
           <img src="../assets/avatar-ai.svg" alt="AI" />
         </div>
-        <div class="message-content">
-          <div class="typing-indicator">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="message-content thinking-animation">
+          <div class="thinking-indicator">
+            <span>正在思考</span>
+            <span class="thinking-dots">
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
+            </span>
           </div>
         </div>
       </div>
@@ -44,27 +47,30 @@
         v-model="inputMessage"
         @keyup.enter="sendMessage"
         :disabled="isLoading"
-        placeholder="和AI恋爱大师倾诉您的心事..."
+        placeholder="和AI情感助手分享您的心事..."
         class="input"
         ref="messageInput"
       />
       <button @click="sendMessage" :disabled="isLoading || !inputMessage.trim()" class="btn btn-primary send-btn">
         <span>发送</span>
-        <span class="send-icon">❤️</span>
+        <span class="send-icon">💌</span>
       </button>
     </div>
   </div>
 </template>
 
 <script>
-import { marked } from 'marked'
 import { config } from '../config/index.ts'
-// 配置marked选项，确保所有Markdown格式都能正确解析
+import { marked } from 'marked'
+
+// 配置marked选项，优化markdown渲染
 marked.setOptions({
-  breaks: true,  // 允许换行
-  gfm: true,     // 使用GitHub风格Markdown
-  headerIds: false, // 禁用标题ID以避免潜在问题
-  mangle: false  // 禁用mangle以避免某些特殊字符问题
+  breaks: true,      // 允许换行
+  gfm: true,         // 使用GitHub风格Markdown
+  headerIds: false,  // 禁用标题ID
+  mangle: false,     // 禁用mangle以避免某些特殊字符问题
+  sanitize: false,   // 禁用HTML清理，允许表情符号等特殊字符
+  smartypants: false // 禁用智能标点，避免影响表情符号
 })
 
 export default {
@@ -87,7 +93,7 @@ export default {
       this.chatId = this.generateChatId()
 
       // 添加欢迎消息
-      this.addMessage('ai', '你好！我是AI恋爱大师，很高兴为您提供情感咨询服务。请告诉我您遇到的问题吧～')
+      this.addMessage('ai', '你好！我是AI情感助手，很高兴为您提供情感咨询服务。无论是爱情、友情还是亲情问题，我都会用心倾听并为您提供建议。请告诉我您遇到的问题吧～')
     },
 
     generateChatId() {
@@ -134,31 +140,96 @@ export default {
       // 使用环境配置中的API地址，而不是硬编码的本地地址
       const apiUrl = `${config.aiLoveChatEndpoint}?message=${encodeURIComponent(message)}&charId=${this.chatId}`
 
+      // 立即添加一条"正在思考"的消息
+      const thinkingMessageId = ++this.messageIdCounter
+      this.messages.push({
+        id: thinkingMessageId,
+        type: 'ai',
+        content: '<div class="thinking-indicator"><span>正在思考</span><span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>',
+        timestamp: new Date(),
+        isThinking: true // 标记这是一个思考状态的消息
+      })
+
+      // 强制滚动到底部，确保用户看到思考动画
+      this.$nextTick(() => {
+        this.scrollToBottom()
+      })
+
       const eventSource = new EventSource(apiUrl)
       let aiResponse = ''
-      let aiMessageId = null
+      let isFirstChunk = true
 
       eventSource.onmessage = (event) => {
-        const chunk = event.data
-        aiResponse += chunk
+        let chunk = event.data
 
-        if (aiMessageId) {
-          // 更新现有消息
-          const messageIndex = this.messages.findIndex(msg => msg.id === aiMessageId)
-          if (messageIndex !== -1) {
-            this.messages[messageIndex].content = aiResponse
+        // 处理可能的对象数据
+        try {
+          // 如果chunk是JSON字符串，尝试解析
+          if (typeof chunk === 'string' && (chunk.startsWith('{') || chunk.startsWith('['))) {
+            const parsedData = JSON.parse(chunk)
+            // 如果是对象，提取其中的文本内容
+            if (typeof parsedData === 'object' && parsedData !== null) {
+              if (parsedData.content || parsedData.text || parsedData.message) {
+                chunk = parsedData.content || parsedData.text || parsedData.message
+              } else if (parsedData.data) {
+                chunk = parsedData.data
+              } else {
+                // 如果对象没���明显的文本字段，尝试将整个对象转为字符串
+                try {
+                  chunk = JSON.stringify(parsedData)
+                } catch (jsonError) {
+                  console.warn('无法序列化对象:', parsedData)
+                  chunk = '[解析错误]'
+                }
+              }
+            }
           }
-        } else {
-          // 创建新消息
-          aiMessageId = ++this.messageIdCounter
-          this.messages.push({
-            id: aiMessageId,
-            type: 'ai',
-            content: aiResponse,
-            timestamp: new Date()
-          })
+        } catch (e) {
+          // 如果不是JSON或解析出错，尝试确保chunk是字符串
+          console.warn('JSON解析错误:', e)
         }
 
+        // 最终确保chunk绝对是字符串类型
+        if (typeof chunk !== 'string') {
+          try {
+            // 对于对象类型，尝试序列化
+            if (chunk && typeof chunk === 'object') {
+              if (chunk.toString && typeof chunk.toString === 'function' && chunk.toString() !== '[object Object]') {
+                chunk = chunk.toString()
+              } else {
+                // 如果toString返回[object Object]，尝试使用JSON序列化
+                chunk = JSON.stringify(chunk)
+              }
+            } else {
+              // 对于其他非字符串类型，直接转换为字符串
+              chunk = String(chunk)
+            }
+          } catch (e) {
+            console.warn('转换为字符串失败:', e)
+            chunk = '[数据类型错误]'
+          }
+        }
+
+        // 如果是第一个响应块，添加"思考完成"提示和分隔符
+        if (isFirstChunk) {
+          isFirstChunk = false
+          aiResponse = '<div class="thinking-complete"><span class="thinking-complete-icon">✨</span><span>思考完成</span></div><div class="response-separator"></div>' + chunk
+        } else {
+          aiResponse += chunk
+        }
+
+        // 找到之前的"思考中"消息，并更新它
+        const messageIndex = this.messages.findIndex(msg => msg.id === thinkingMessageId)
+        if (messageIndex !== -1) {
+          // 直接更新消息内容，确保Vue检测到变化
+          this.messages[messageIndex].content = aiResponse
+          this.messages[messageIndex].timestamp = new Date()
+          this.messages[messageIndex].isThinking = false // 移除思考状态标记
+          // 强制触发重新渲染
+          this.$forceUpdate()
+        }
+
+        // 强制重新渲染并滚动到底部
         this.$nextTick(() => {
           this.scrollToBottom()
         })
@@ -167,8 +238,17 @@ export default {
       eventSource.onerror = (error) => {
         console.error('SSE连接错误:', error)
         eventSource.close()
-        if (!aiResponse) {
-          this.addMessage('ai', '抱歉，连接出现问题，请稍后重试。')
+
+        // 查找"正在思考"消息
+        const messageIndex = this.messages.findIndex(msg => msg.id === thinkingMessageId)
+        if (messageIndex !== -1) {
+          if (!aiResponse) {
+            // 如果没有收到任何响应，替换为错误消息
+            this.messages[messageIndex].content = '抱歉，连接出现问题，请稍后重试。'
+            this.messages[messageIndex].isThinking = false
+            // 强制触发重新渲染
+            this.$forceUpdate()
+          }
         }
       }
 
@@ -186,15 +266,24 @@ export default {
       this.$router.push('/')
     },
 
-    renderMarkdown(content) {
-      if (!content) return ''
+    renderMarkdown(markdown) {
+      if (!markdown) return ''
+
       try {
-        return marked.parse(content)
-      } catch (e) {
-        console.error('Markdown渲染错误:', e)
-        return content // 如果渲染出错，至少显示原始内容
+        // 预处理markdown内容：修复标题格式(在#后添加空格)
+        let processedContent = markdown
+          // 匹配以一个或多个#开头，后面紧跟非空格字符的情况
+          .replace(/^(#+)([^#\s])/gm, '$1 $2')  // 在行首的#后添加空格
+          .replace(/\n(#+)([^#\s])/gm, '\n$1 $2')  // 在换行后的#后添加空格
+
+        // 使用marked库渲染Markdown为HTML
+        return marked(processedContent)
+      } catch (error) {
+        console.error('Markdown渲染错误:', error)
+        // 出错时至少返回原始文本，确保换行符正确显示
+        return markdown.replace(/\n/g, '<br>')
       }
-    },
+    }
   }
 }
 </script>
@@ -419,37 +508,115 @@ export default {
   font-size: 18px;
 }
 
-/* 输入提示动画 */
-.typing-indicator {
+/* 正在思考的动画样式 */
+.thinking-animation {
+  background: var(--love-message);
+  color: #555;
+  border: 1px solid #dbe6f6;
+}
+
+:deep(.thinking-indicator) {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
+  font-size: 15px;
+  position: relative;
 }
 
-.typing-indicator span {
+:deep(.thinking-indicator span:first-child) {
+  color: var(--love-text);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  background-image: linear-gradient(45deg, #9370db, #ffb6c1);
+  background-size: 100%;
+  background-repeat: repeat;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: pulse-text 2s infinite ease-in-out;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+:deep(.thinking-dots) {
+  display: inline-flex;
+  align-items: center;
+}
+
+:deep(.thinking-dots span) {
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--love-primary);
+  animation: thinkingDots 1.4s infinite;
+  text-shadow: 0 0 3px rgba(255, 182, 193, 0.5);
+  line-height: 0.7;
+}
+
+:deep(.thinking-dots span:nth-child(1)) {
+  animation-delay: 0s;
+}
+
+:deep(.thinking-dots span:nth-child(2)) {
+  animation-delay: 0.2s;
+}
+
+:deep(.thinking-dots span:nth-child(3)) {
+  animation-delay: 0.4s;
+}
+
+@keyframes thinkingDots {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+/* 思考完成提���样式 */
+:deep(.thinking-complete) {
+  color: var(--love-text);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+:deep(.thinking-complete-icon) {
+  animation: sparkle 1.5s infinite;
   display: inline-block;
-  width: 8px;
-  height: 8px;
-  background-color: var(--love-secondary);
-  border-radius: 50%;
-  animation: typingBounce 1.4s infinite ease-in-out both;
 }
 
-.typing-indicator span:nth-child(1) {
-  animation-delay: -0.32s;
+@keyframes sparkle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
 }
 
-.typing-indicator span:nth-child(2) {
-  animation-delay: -0.16s;
+/* 分隔线样式 */
+:deep(.response-separator) {
+  margin: 12px 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--love-primary), transparent);
+  opacity: 0.6;
+  position: relative;
+  overflow: visible;
 }
 
-@keyframes typingBounce {
-  0%, 80%, 100% {
-    transform: scale(0);
-  }
-  40% {
-    transform: scale(1);
-  }
+:deep(.response-separator::after) {
+  content: '💭';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--love-message);
+  padding: 0 10px;
+  font-size: 14px;
+  line-height: 1;
 }
 
 /* Markdown内容样式 */
@@ -458,75 +625,94 @@ export default {
   line-height: 1.5;
 }
 
+/* 自定义markdown样式类 */
+:deep(.markdown-heading) {
+  font-weight: 600;
+  margin: 0.8em 0 0.5em 0;
+  line-height: 1.3;
+}
+
+:deep(.markdown-h1) {
+  font-size: 1.6em;
+  color: #6a8caf;
+  border-bottom: 2px solid #dbe6f6;
+  padding-bottom: 0.3em;
+}
+
+:deep(.markdown-h2) {
+  font-size: 1.4em;
+  color: #6a8caf;
+}
+
+:deep(.markdown-h3) {
+  font-size: 1.2em;
+  color: #6a8caf;
+}
+
+:deep(.markdown-h4) {
+  font-size: 1.1em;
+  color: #6a8caf;
+}
+
+:deep(.markdown-paragraph) {
+  margin-bottom: 0.8em;
+  text-align: justify;
+  text-indent: 0;
+}
+
+:deep(.markdown-list) {
+  padding-left: 2em;
+  margin: 0.8em 0;
+}
+
+:deep(.markdown-listitem) {
+  margin-bottom: 0.4em;
+  padding-left: 0.3em;
+}
+
+:deep(.markdown-link) {
+  color: #6a8caf;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+:deep(.markdown-link:hover) {
+  border-bottom-color: #6a8caf;
+}
+
+/* 原有样式保持兼容 */
+:deep(h1), :deep(h2), :deep(h3), :deep(h4), :deep(h5), :deep(h6) {
+  margin-top: 0.8em;
+  margin-bottom: 0.5em;
+  color: #6a8caf;
+}
+
+/* 标题下的段落样式增强 */
+:deep(h1) + :deep(p),
+:deep(h2) + :deep(p),
+:deep(h3) + :deep(p),
+:deep(h4) + :deep(p),
+:deep(h5) + :deep(p),
+:deep(h6) + :deep(p) {
+  letter-spacing: 0.02em; /* 增加字间距 */
+  line-height: 1.7; /* 增加行间距 */
+  margin-bottom: 0.7em; /* 增加段落底部间距 */
+  padding-left: 0.3em; /* 轻微缩进 */
+}
+
 :deep(h1) {
   font-size: 1.6em;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
   color: #6a8caf;
 }
 
 :deep(h2) {
   font-size: 1.4em;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
   color: #6a8caf;
 }
 
 :deep(h3) {
   font-size: 1.2em;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
   color: #6a8caf;
-}
-
-:deep(ul), :deep(ol) {
-  padding-left: 1.5em;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
-}
-
-:deep(li) {
-  margin-bottom: 0.3em;
-}
-
-:deep(pre), :deep(code) {
-  background: #f0f5ff;
-  border-radius: 3px;
-  font-family: monospace;
-  padding: 2px 4px;
-  border: 1px solid #dbe6f6;
-}
-
-:deep(pre) {
-  padding: 0.5em;
-  overflow-x: auto;
-  margin: 0.5em 0;
-}
-
-:deep(pre code) {
-  background: none;
-  padding: 0;
-  border: none;
-}
-
-:deep(p) {
-  margin-bottom: 0.5em;
-}
-
-:deep(blockquote) {
-  border-left: 4px solid #98b4d4;
-  padding-left: 1em;
-  color: #666;
-  margin: 0.5em 0;
-  background: #f8faff;
-}
-
-:deep(a) {
-  color: #6a8caf;
-  text-decoration: none;
-}
-
-:deep(a:hover) {
-  text-decoration: underline;
 }
 </style>

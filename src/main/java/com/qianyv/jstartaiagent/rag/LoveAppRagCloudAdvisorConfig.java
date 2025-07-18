@@ -30,7 +30,7 @@ public class LoveAppRagCloudAdvisorConfig {
     @Value("${spring.ai.dashscope.api-key}")
     private String api_key;
 
-    @Bean
+    // todo 暂不使用这个bean，需要再开启@Bean
     public Advisor loveAppRagCloudAdvisor() {
         DashScopeApi dashScopeApi = new DashScopeApi(api_key);
 
@@ -52,6 +52,24 @@ public class LoveAppRagCloudAdvisorConfig {
 
     @Bean
     public Advisor myRagAdvisor() {
+        String promptTemplate = """
+			Context information is below.
+
+			---------------------
+			{context}
+			---------------------
+
+			Given the context information and no prior knowledge, answer the query.
+
+			Follow these rules:
+
+			1. If the answer is not in the context, answer based on your own knowledge.
+			2. Avoid statements like "Based on the context..." or "The provided information...".
+
+			Query: {query}
+
+			Answer:
+			""";
 
         //定义元信息过滤表达式
         Filter.Expression filterExpression = new FilterExpressionBuilder()
@@ -59,8 +77,8 @@ public class LoveAppRagCloudAdvisorConfig {
 
         VectorStoreDocumentRetriever vsdr = VectorStoreDocumentRetriever.builder()
                 .vectorStore(loveAppVectorStore) //使用本地向量存储
-                .similarityThreshold(0.24)
-                .filterExpression(filterExpression)//接收过滤表达式（对元信息过滤）
+                .similarityThreshold(0.20)
+//                .filterExpression(filterExpression)//接收过滤表达式（对元信息过滤）
                 .topK(5)
                 .build();
 
@@ -68,8 +86,9 @@ public class LoveAppRagCloudAdvisorConfig {
                 .builder()
                 .documentRetriever(vsdr)
                 .queryAugmenter(ContextualQueryAugmenter.builder()
+                        .promptTemplate(new PromptTemplate(promptTemplate))
                         .allowEmptyContext(true)
-                        .emptyContextPromptTemplate(new PromptTemplate("检索到空知识库了，不再使用知识库知识，直接使用你大模型的知识回答"))
+                        .emptyContextPromptTemplate(new PromptTemplate("没有检索到知识库，直接使用你自己的知识回答情感问题，不能回答情感问题以外的问题"))
                         .build())
                 .build();
     }

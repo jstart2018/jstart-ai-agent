@@ -1,6 +1,7 @@
 package com.qianyv.jstartaiagent.app;
 
 import cn.hutool.core.lang.UUID;
+import com.esotericsoftware.minlog.Log;
 import com.qianyv.jstartaiagent.chatMemory.MySQLBasedChatMemory;
 import com.qianyv.jstartaiagent.service.ConversationMemoryService;
 import jakarta.annotation.Resource;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import reactor.core.publisher.Flux;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -101,4 +103,8 @@ class LoveAppTest {
         Assertions.assertNotNull(answer);
     }
 
+    @Test
+    void doChatWithMyRagAdvisorBySSE() {
+        Flux<String> stringFlux = loveApp.doChatWithMyRagAdvisorBySSE("你好，你可以做什么", "5451351");
+    }
 }

@@ -11,21 +11,21 @@
 
     <div class="hero-section">
       <div class="logo-container">
-        <div class="logo-icon">💖</div>
+        <div class="logo-icon">💫</div>
       </div>
-      <h1 class="title">AI情感助手平台</h1>
+      <h1 class="title">心灵伙伴</h1>
       <p class="subtitle">让AI为您的生活与情感提供专业指导</p>
     </div>
 
     <div class="apps-grid">
       <div class="app-card love-card" @click="navigateToLoveChat">
         <div class="card-header">
-          <div class="app-icon">💕</div>
-          <h3>AI恋爱大师</h3>
+          <div class="app-icon">💫</div>
+          <h3>AI情感助手</h3>
         </div>
-        <p>专业的恋爱建议和情感指导，让爱情之路更加顺畅</p>
+        <p>专业的情感咨询服务，涵盖爱情、友情和亲情指导</p>
         <div class="features">
-          <div class="feature"><span>❤️</span> 情感分析</div>
+          <div class="feature"><span>💝</span> 情感分析</div>
           <div class="feature"><span>📚</span> 知识库</div>
           <div class="feature"><span>🔒</span> 隐私保护</div>
         </div>
@@ -48,7 +48,7 @@
     </div>
 
     <footer class="footer">
-      <p>© 2025 AI情感助手平台 - 让AI助你解锁情感密码</p>
+      <p>© 2025 心灵伙伴 - 让AI助你解锁情感密码</p>
     </footer>
   </div>
 </template>
