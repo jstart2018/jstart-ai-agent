@@ -8,6 +8,7 @@ target/
 application-local.*
 application-prod.*
 temp
+dist
 
 ### STS ###
 .apt_generated

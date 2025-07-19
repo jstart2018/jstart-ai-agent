@@ -329,19 +329,19 @@ export default {
 }
 
 :deep(h1) {
-  font-size: 1.8em;
+  font-size: 1.6em;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
 
 :deep(h2) {
-  font-size: 1.5em;
+  font-size: 1.4em;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
 
 :deep(h3) {
-  font-size: 1.3em;
+  font-size: 1.2em;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
@@ -431,6 +431,7 @@ export default {
   padding: 12px 16px;
   border-radius: 18px;
   word-wrap: break-word;
+  font-size: 14px; /* 添加基础字体大小设置 */
 }
 
 .message.user .message-content {
